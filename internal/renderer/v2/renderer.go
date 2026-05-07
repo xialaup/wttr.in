@@ -16,10 +16,12 @@ import (
 // weather emojis, colored wind, astronomical data, frame, etc.)
 type V2Renderer struct{}
 
+// NewV2Renderer creates a renderer for the v2 rich panel weather view.
 func NewV2Renderer() *V2Renderer {
 	return &V2Renderer{}
 }
 
+// Render converts the query's weather JSON into the v2 terminal weather report.
 func (r *V2Renderer) Render(q domain.Query) (domain.RenderOutput, error) {
 	if q.Weather == nil || len(*q.Weather) == 0 {
 		return domain.RenderOutput{}, fmt.Errorf("no weather data available")
