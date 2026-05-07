@@ -156,11 +156,6 @@ cmd_clean() {
     info "Clean done"
 }
 
-cmd_all() {
-    cmd_assets
-    cmd_build
-}
-
 cmd_help() {
     cat <<EOF
 Usage: ./build.sh <command>
@@ -168,7 +163,6 @@ Usage: ./build.sh <command>
 Commands:
   assets      Prepare/copy embeddable assets
   build       Build the binary (implies assets)
-  all         assets + build
   clean       Remove build artifacts and copied assets
   help        Show this help
 
@@ -192,7 +186,6 @@ main() {
         assets)     cmd_assets "$@" ;;
         build)      cmd_build "$@" ;;
         gen)        cmd_gen "$@" ;;
-        all)        cmd_all "$@" ;;
         clean)      cmd_clean "$@" ;;
         update-css) cmd_update_css "$@" ;;
         help|--help|-h)
