@@ -600,157 +600,106 @@ in your language.
 
 ## Installation
 
-To install the application:
+This guide explains how to install wttr.in from the source code.
 
-1. Install external dependencies
-2. Install Python dependencies used by the service
-3. Configure IP2Location (optional)
-4. Get a WorldWeatherOnline API and configure wego
-5. Configure wttr.in
-6. Configure the HTTP-frontend service
+It is implemented as a *single static binary* with all assets (including fonts for PNG rendering) embedded inside.
+It has *zero runtime dependencies*, supports both HTTP and HTTPS natively,
+and does not need nginx, Apache, or any other web server in front.
 
-### Install external dependencies
+At the end of this installation you will have:
 
-wttr.in has the following external dependencies:
+- A clean, self-contained wttr.in service installed in `/wttr.in/`
+- A single executable binary (`/wttr.in/bin/srv`)
+- Configured caching, IP geolocation (GeoIP2), and location resolution (OpenCage)
+- The service, fully equivalent to the public wttr.in, is running on port 8080 (HTTP) and is ready to serve weather reports.
 
-* [golang](https://golang.org/doc/install), wego dependency
-* [wego](https://github.com/schachmat/wego), weather client for terminal
-
-After you install [golang](https://golang.org/doc/install), install `wego`:
-```bash
-go install github.com/schachmat/wego@latest
-```
-
-### Install Python dependencies
-
-Python requirements:
-
-* Flask
-* geoip2
-* geopy
-* requests
-* gevent
-
-If you want to get weather reports as PNG files, you'll also need to install:
-
-* PIL
-* pyte (>=0.6)
-* necessary fonts
-
-You can install most of them using `pip`.
-
-Some python package use LLVM, so install it first:
+### System Preparation
 
 ```bash
-apt-get install llvm-7 llvm-7-dev
+sudo mkdir -p /wttr.in/{bin,cache,log,data,etc}
 ```
-If `virtualenv` is used:
+
+If you want to run the server as a dedicated user (recommended):
 ```bash
-virtualenv -p python3 ve
-ve/bin/pip3 install -r requirements.txt
-ve/bin/python3 bin/srv.py
+sudo useradd -r -s /bin/false -u 1000 wttr
+sudo chown -R wttr:wttr /wttr.in
 ```
 
-Also, you need to install the geoip2 database.
-You can use a free database GeoLite2 that can be downloaded from (http://dev.maxmind.com/geoip/geoip2/geolite2/).
+### Download GeoIP2 Database
 
-### Configure IP2Location (optional)
+For automated IPs resolution:
 
-If you want to use the IP2location service for IP-addresses that are not covered by GeoLite2,
-you have to obtain a API key of that service, and after that save into the `~/.ip2location.key` file:
+- Register at [MaxMind](https://www.maxmind.com) and download **GeoLite2-City.mmdb**.
+- Place it at: `/wttr.in/data/GeoLite2-City.mmdb`
 
-```
-$ echo 'YOUR_IP2LOCATION_KEY' > ~/.ip2location.key
-```
-
-If you don't have this file, the service will be silently skipped (it is not a big problem,
-because the MaxMind database is pretty good).
-
-### Installation with Docker
-
-* Install Docker
-* Build Docker Image
-* These files should be mounted by the user at runtime:
-
-```
-/root/.wegorc
-/root/.ip2location.key (optional)
-/app/airports.dat
-/app/GeoLite2-City.mmdb
-```
-
-### Get a WorldWeatherOnline key and configure wego
-
-To get a WorldWeatherOnline API key, you must register here:
-
-    https://developer.worldweatheronline.com/auth/register
-
-After you have a WorldWeatherOnline key, you can save it into the
-WWO key file: `~/.wwo.key`
-
-Also, you have to specify the key in the `wego` configuration:
-
-```json
-$ cat ~/.wegorc
-{
-	"APIKey": "00XXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"City": "London",
-	"Numdays": 3,
-	"Imperial": false,
-	"Lang": "en"
-}
-```
-
-The `City` parameter in `~/.wegorc` is ignored.
-
-### Configure wttr.in
-
-Configure the following environment variables that define the path to the local `wttr.in`
-installation, to the GeoLite database, and to the `wego` installation. For example:
+### Build the Binary
 
 ```bash
-export WTTR_MYDIR="/home/igor/wttr.in"
-export WTTR_GEOLITE="/home/igor/wttr.in/GeoLite2-City.mmdb"
-export WTTR_WEGO="/home/igor/go/bin/wego"
-export WTTR_LISTEN_HOST="0.0.0.0"
-export WTTR_LISTEN_PORT="8002"
+git clone https://github.com/chubin/wttr.in.git
+cd wttr.in
+
+# Build-time fonts (embedded in final binary)
+sudo apt-get install -y --no-install-recommends \
+  fontconfig fonts-dejavu-core fonts-noto-core fonts-noto-cjk \
+  fonts-wqy-zenhei fonts-symbola fonts-motoya-l-cedar fonts-lexi-gulim
+
+bash build.sh build
 ```
 
+### Install the Binary
 
-### Configure the HTTP-frontend service
-
-It's recommended that you also configure the web server that will be used to access the service:
-
-```nginx
-server {
-	listen [::]:80;
-	server_name  wttr.in *.wttr.in;
-	access_log  /var/log/nginx/wttr.in-access.log  main;
-	error_log  /var/log/nginx/wttr.in-error.log;
-
-	location / {
-	    proxy_pass         http://127.0.0.1:8002;
-
-	    proxy_set_header   Host             $host;
-	    proxy_set_header   X-Real-IP        $remote_addr;
-	    proxy_set_header   X-Forwarded-For  $remote_addr;
-
-	    client_max_body_size       10m;
-	    client_body_buffer_size    128k;
-
-	    proxy_connect_timeout      90;
-	    proxy_send_timeout         90;
-	    proxy_read_timeout         90;
-
-	    proxy_buffer_size          4k;
-	    proxy_buffers              4 32k;
-	    proxy_busy_buffers_size    64k;
-	    proxy_temp_file_write_size 64k;
-
-	    expires                    off;
-	}
-}
+```bash
+sudo cp srv /wttr.in/bin/srv
+sudo chown wttr:wttr /wttr.in/bin/srv
 ```
+
+### Configuration
+
+Create `/wttr.in/config.yaml`:
+
+```yaml
+cache:
+  size: 50000
+
+ip:
+  ipCacheDb: /wttr.in/cache/geoip.db
+  ipCacheType: db
+  geoip2: /wttr.in/data/GeoLite2-City.mmdb
+
+geo:
+  locationCacheDb: /wttr.in/cache/geoloc.db
+  locationCacheType: db
+  nominatim:
+    - name: opencage
+      type: opencage
+      url: https://api.opencagedata.com/geocode/v1/json
+      token: "YOUR_OPENCAGE_TOKEN_HERE"
+
+weather:
+  wwo:
+    baseUrl: "http://wttr.in/{lat},{lon}?format=j1&lang={lang}"
+    # token: "YOUR_WWO_TOKEN"   # optional
+
+server:
+  portHttp: 8080
+  # portHttps: 8443
+  # tlsCertFile: /wttr.in/etc/fullchain.pem
+  # tlsKeyFile: /wttr.in/etc/privkey.pem
+```
+
+The configuration implies the use of OpenCage for geolocation (a token is required) and wttr.in as the source of weather data.
+If you want to use *WorldWeatherOnline*, you must register there to obtain a token and set the `baseUrl` accordingly.
+
+
+### Running the Service
+```bash
+cd /wttr.in
+sudo -u wttr ./bin/srv --config config.yaml
+```
+
+You can now access your instance at `http://your-server:8080` (e.g. `http://your-server:8080/London`).
+
+For production, create a systemd service. Cache and logs are stored under `/wttr.in/cache` and `/wttr.in/log`.
 
 ## wttr.in usage stats
 
