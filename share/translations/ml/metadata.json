@@ -2,5 +2,6 @@
   "code": "ml",
   "name": "ml",
   "locale": "ml_IN",
-  "full_translation": false
+  "full_translation": false,
+  "issue": 1082
 }
