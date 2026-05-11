@@ -30,7 +30,7 @@ FONTS["NotoSansGurmukhi-Regular.ttf"]="/usr/share/fonts/truetype/noto/NotoSansGu
 
 # ─── Asset roots (non-font) ───────────────────────────────────────────────────
 ASSET_ROOTS=(
-    "spec"
+    "share/defs"
     "share/static"
     "share/pages"
     "share/templates"

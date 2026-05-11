@@ -1,6 +1,6 @@
-// Package spec provides structured access to wttr.in's one-line format specification,
+// Package defs provides structured access to wttr.in's one-line format definitions,
 // particularly the list of supported placeholders (%c, %t, etc.).
-package spec
+package defs
 
 import (
 	_ "embed"
@@ -94,10 +94,10 @@ type PreconfiguredFormat struct {
 	ExampleOutput string `yaml:"example_output,omitempty"`
 }
 
-// LoadSpecFromAssets loads and merges all .yaml / .yml files under spec/ in the embedded FS.
+// LoadDefsFromAssets loads and merges all .yaml / .yml files under spec/ in the embedded FS.
 // Slices are appended; other fields are overridden by later files.
-func LoadSpecFromAssets() (*WttrInOptions, error) {
-	const root = "embed/spec"
+func LoadDefsFromAssets() (*WttrInOptions, error) {
+	const root = "embed/share/defs"
 
 	var final WttrInOptions
 

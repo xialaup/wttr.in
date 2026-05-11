@@ -11,6 +11,7 @@ import (
 
 	"github.com/chubin/wttr.in/internal/cache"
 	"github.com/chubin/wttr.in/internal/config"
+	"github.com/chubin/wttr.in/internal/defs"
 	"github.com/chubin/wttr.in/internal/formatter"
 	"github.com/chubin/wttr.in/internal/generate"
 	"github.com/chubin/wttr.in/internal/ip"
@@ -23,7 +24,6 @@ import (
 	v1 "github.com/chubin/wttr.in/internal/renderer/v1"
 	v2 "github.com/chubin/wttr.in/internal/renderer/v2"
 	"github.com/chubin/wttr.in/internal/server"
-	"github.com/chubin/wttr.in/internal/spec"
 	"github.com/chubin/wttr.in/internal/uplink"
 	"github.com/chubin/wttr.in/internal/weather"
 )
@@ -101,7 +101,7 @@ func srv(configFile string) error {
 	}
 	ipLocators = append(ipLocators, ip.NewIPCacheLocator(ipCache))
 
-	spec, err := spec.LoadSpecFromAssets()
+	defs, err := defs.LoadDefsFromAssets()
 	if err != nil {
 		log.Fatalln("error loading wttr.in options description: ", err)
 	}
@@ -120,7 +120,7 @@ func srv(configFile string) error {
 		weather.NewWeatherClient(cfg.Weather.WWO),
 		weather.NewCacheLocator(locationCache),
 		ipLocators,
-		query.NewQueryParser(spec),
+		query.NewQueryParser(defs),
 		lruCache,
 		requestLogger,
 		uplink.NewUplinkProcessor(cfg.Uplink),

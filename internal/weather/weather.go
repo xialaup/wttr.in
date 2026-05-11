@@ -76,6 +76,11 @@ type UplinkProcessor interface {
 	Route(opts *options.Options, r *http.Request, ipData *domain.IPData, location *domain.Location) (bool, *domain.CacheEntry, error)
 }
 
+// Localizer provides localized strings for a specific language.
+type Localizer interface {
+	Text(lang string, key string) string
+}
+
 // TimeTracker holds timing information for each step in the pipeline.
 type TimeTracker struct {
 	StepTimes []struct {
