@@ -11,6 +11,7 @@ import (
 
 	"github.com/chubin/wttr.in/internal/domain"
 	"github.com/chubin/wttr.in/internal/options"
+	w "github.com/chubin/wttr.in/internal/weather"
 	"github.com/clipperhouse/displaywidth"
 )
 
@@ -28,7 +29,7 @@ func NewV1Renderer() *V1Renderer {
 }
 
 // Render implements the weather.Renderer interface.
-func (r *V1Renderer) Render(query domain.Query) (domain.RenderOutput, error) {
+func (r *V1Renderer) Render(query domain.Query, localizer w.Localizer) (domain.RenderOutput, error) {
 	if query.Weather == nil || len(*query.Weather) == 0 {
 		return domain.RenderOutput{}, errors.New("no weather data provided")
 	}

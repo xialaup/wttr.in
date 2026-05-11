@@ -10,6 +10,7 @@ import (
 
 	"github.com/chubin/wttr.in/internal/domain"
 	"github.com/chubin/wttr.in/internal/options"
+	w "github.com/chubin/wttr.in/internal/weather"
 )
 
 // V2Renderer implements the rich panel view (temperature diagram, rain sparkline,
@@ -22,7 +23,7 @@ func NewV2Renderer() *V2Renderer {
 }
 
 // Render converts the query's weather JSON into the v2 terminal weather report.
-func (r *V2Renderer) Render(q domain.Query) (domain.RenderOutput, error) {
+func (r *V2Renderer) Render(q domain.Query, localizer w.Localizer) (domain.RenderOutput, error) {
 	if q.Weather == nil || len(*q.Weather) == 0 {
 		return domain.RenderOutput{}, fmt.Errorf("no weather data available")
 	}

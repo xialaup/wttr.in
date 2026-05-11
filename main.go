@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -24,6 +25,7 @@ import (
 	v1 "github.com/chubin/wttr.in/internal/renderer/v1"
 	v2 "github.com/chubin/wttr.in/internal/renderer/v2"
 	"github.com/chubin/wttr.in/internal/server"
+	"github.com/chubin/wttr.in/internal/translate"
 	"github.com/chubin/wttr.in/internal/uplink"
 	"github.com/chubin/wttr.in/internal/weather"
 )
@@ -116,6 +118,8 @@ func srv(configFile string) error {
 		time.Duration(cfg.Logging.Interval)*time.Second,
 	)
 
+	localizer := translate.NewBundle(embed.FS)
+
 	ws := weather.NewWeatherService(
 		weather.NewWeatherClient(cfg.Weather.WWO),
 		weather.NewCacheLocator(locationCache),
@@ -126,6 +130,7 @@ func srv(configFile string) error {
 		uplink.NewUplinkProcessor(cfg.Uplink),
 		rendererMap,
 		formatterMap,
+		localizer,
 	)
 
 	return server.Serve(&cfg.Server, &cfg.Logging, ws)
