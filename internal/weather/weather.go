@@ -354,6 +354,8 @@ func (s *WeatherService) computeResponse(
 	}
 	tracker.Add("Build Query object", time.Since(start))
 
+	l10n := localization.New(s.Localizer, opts)
+
 	start = time.Now()
 	var (
 		isUpstream     bool
@@ -373,10 +375,24 @@ func (s *WeatherService) computeResponse(
 	} else {
 		// ── Fetch weather ─────────────────────────────────────────────────────
 		start = time.Now()
+
+		// Later, here a new layer of indirection will be needed,
+		// that is responsible for:
+		//
+		// 1. Conversion between multiple formats
+		// 2. Translation of the language
+		// 3. Other data transformation
+
 		weatherBytes, err := s.Weatherer.GetWeather(location.Latitude, location.Longitude, opts.Lang)
 		if err != nil {
 			return nil, ErrDataSource
 		}
+
+		weatherBytes, err = localization.TranslateWeather(weatherBytes, opts.Lang, l10n)
+		if err != nil {
+			return nil, ErrDataSource
+		}
+
 		tracker.Add("Fetch weather data", time.Since(start))
 
 		// ── Filling up Query ───────────────────────────────────────────────────────
