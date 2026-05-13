@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/chubin/wttr.in/internal/domain"
+	"github.com/chubin/wttr.in/internal/localization"
 	"github.com/chubin/wttr.in/internal/options"
 	"github.com/chubin/wttr.in/internal/util/termutil"
 )
@@ -36,7 +37,7 @@ type Locator interface {
 
 // Renderer interface for rendering weather data into a visual representation.
 type Renderer interface {
-	Render(query domain.Query, localizer Localizer) (domain.RenderOutput, error)
+	Render(query domain.Query, localizer localization.Localizer) (domain.RenderOutput, error)
 }
 
 // Formatter interface for converting rendered output into the final format.
@@ -75,23 +76,6 @@ type UplinkProcessor interface {
 	Route(opts *options.Options, r *http.Request, ipData *domain.IPData, location *domain.Location) (bool, *domain.CacheEntry, error)
 }
 
-// Localizer provides localized strings for a specific language.
-type Localizer interface {
-	// Text returns a translated string by key.
-	// It should be used for messages, captions, v1/v2 keys, etc.
-	// Do NOT pass condition codes here.
-	Text(lang, key string) string
-
-	// Condition returns translated weather condition by numeric code.
-	Condition(lang string, code int) string
-
-	// ConditionByName returns translated condition by its English name.
-	ConditionByName(lang, englishName string) string
-
-	// File returns raw file content (help.txt, etc.)
-	File(lang, name string) (string, error)
-}
-
 // TimeTracker holds timing information for each step in the pipeline.
 type TimeTracker struct {
 	StepTimes []struct {
@@ -123,7 +107,7 @@ type WeatherService struct {
 	UplinkProcessor UplinkProcessor
 	RendererMap     map[string]Renderer
 	FormatterMap    map[string]Formatter
-	Localizer       Localizer
+	Localizer       localization.Localizer
 }
 
 // NewWeatherService initializes a new pipeline based on the provided options.
@@ -137,7 +121,7 @@ func NewWeatherService(
 	uplinkProcessor UplinkProcessor,
 	rendererMap map[string]Renderer,
 	formatterMap map[string]Formatter,
-	localizer Localizer,
+	localizer localization.Localizer,
 ) *WeatherService {
 	return &WeatherService{
 		Weatherer:       weatherer,

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/chubin/wttr.in/internal/domain"
-	"github.com/chubin/wttr.in/internal/weather"
+	"github.com/chubin/wttr.in/internal/localization"
 )
 
 // Description maps internal field names to [Prometheus metric name, help text]
@@ -58,7 +58,7 @@ func NewPrometheusRenderer() *PrometheusRenderer {
 }
 
 // Render implements the Renderer interface
-func (r *PrometheusRenderer) Render(query domain.Query, localizer weather.Localizer) (domain.RenderOutput, error) {
+func (r *PrometheusRenderer) Render(query domain.Query, localizer localization.Localizer) (domain.RenderOutput, error) {
 	var output strings.Builder
 	alreadySeen := make(map[string]bool)
 

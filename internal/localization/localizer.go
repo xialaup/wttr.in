@@ -7,8 +7,24 @@ package localization
 
 import (
 	"github.com/chubin/wttr.in/internal/options"
-	"github.com/chubin/wttr.in/internal/weather"
 )
+
+// Localizer provides localized strings for a specific language.
+type Localizer interface {
+	// Text returns a translated string by key.
+	// It should be used for messages, captions, v1/v2 keys, etc.
+	// Do NOT pass condition codes here.
+	Text(lang, key string) string
+
+	// Condition returns translated weather condition by numeric code.
+	Condition(lang string, code int) string
+
+	// ConditionByName returns translated condition by its English name.
+	ConditionByName(lang, englishName string) string
+
+	// File returns raw file content (help.txt, etc.)
+	File(lang, name string) (string, error)
+}
 
 // LocalizeFunc is a language-bound text localization function.
 type LocalizeFunc func(key string) string
@@ -37,12 +53,12 @@ type L10n struct {
 	Lang string
 
 	// Underlying localizer (kept for advanced methods like File())
-	localizer weather.Localizer
+	localizer Localizer
 }
 
 // New creates a new L10n wrapper bound to the language specified in Options.
 // Falls back to English if no language is set.
-func New(l weather.Localizer, opts *options.Options) L10n {
+func New(l Localizer, opts *options.Options) L10n {
 	lang := "en"
 	if opts != nil && opts.Lang != "" {
 		lang = opts.Lang

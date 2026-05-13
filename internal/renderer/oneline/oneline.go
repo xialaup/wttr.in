@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/chubin/wttr.in/internal/domain"
+	"github.com/chubin/wttr.in/internal/localization"
 	"github.com/chubin/wttr.in/internal/options"
-	w "github.com/chubin/wttr.in/internal/weather"
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ var placeholderRenderers = map[rune]RenderFunc{
 // Main rendering loop using the map
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (r *OnelineRenderer) Render(q domain.Query, localizer w.Localizer) (domain.RenderOutput, error) {
+func (r *OnelineRenderer) Render(q domain.Query, localizer localization.Localizer) (domain.RenderOutput, error) {
 	if q.Weather == nil || len(*q.Weather) == 0 {
 		return domain.RenderOutput{}, fmt.Errorf("no weather data")
 	}
